@@ -10,12 +10,25 @@ import io.ktor.http.content.*
 import io.ktor.request.receiveParameters
 import io.ktor.response.*
 import io.ktor.routing.*
+import kotlinx.coroutines.runBlocking
 import kotlinx.html.*
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
+fun giveShortTimeFormatter(): DateTimeFormatter {
+    return DateTimeFormatter.ISO_LOCAL_TIME
+//  TODO:  return DateTimeFormatter.ofPattern("[HH:]mm:ss")
+}
+
 fun Application.module() {
+
+    val svcClient = SvcClient
+
     install (FreeMarker) {
         templateLoader = ClassTemplateLoader(this::class.java.classLoader, "templates")
         outputFormat = HTMLOutputFormat.INSTANCE
@@ -25,13 +38,17 @@ fun Application.module() {
             resources("files")
         }
         get("/") {
-            call.respond(FreeMarkerContent("index.ftl", mapOf("entries" to timeEntries)))
+            val entriesList = runBlocking {  svcClient.loadTimeEntries() }
+            call.respond(FreeMarkerContent("index.ftl", mapOf("entries" to entriesList)))
         }
         post("/submit") {
             val params = call.receiveParameters()
-            val headline = params["headline"] ?: return@post call.respond(HttpStatusCode.BadRequest)
-            val body = params["body"] ?: return@post call.respond(HttpStatusCode.BadRequest)
-            val newEntry = TimeEntry(headline, body)
+            val problems = params["problems"] ?: return@post call.respond(HttpStatusCode.BadRequest)
+            val measuredTime = params["measuredTime"] ?: return@post call.respond(HttpStatusCode.BadRequest)
+            var timeOfEntry = LocalDateTime.now()
+            if (params["timeOfEntry"]?.isNotBlank()!!)
+                timeOfEntry = LocalDateTime.parse(params["timeOfEntry"], DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            val newEntry = TimeEntry(UUID.randomUUID().toString(), listOf(problems), timeOfEntry, LocalTime.parse(measuredTime, giveShortTimeFormatter()))
             timeEntries.add(0, newEntry)
             call.respondHtml {
                 body {
@@ -39,9 +56,9 @@ fun Application.module() {
                         +"Thanks for submitting the entry!"
                     }
                     p {
-                        +"We've submitted you new entry titled "
+                        +"We've submitted you new entry with following time "
                         b {
-                            +newEntry.headline
+                            +newEntry.measuredTime.toString()
                         }
                     }
                     p {

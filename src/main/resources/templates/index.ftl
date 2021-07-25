@@ -11,17 +11,24 @@
 <hr>
 <#list entries as item>
     <div>
-        <h3>${item.headline}</h3>
-        <p>${item.body}</p>
+        <p>${item.id}</p>
+        <p>${item.timeOfEntry}</p>
+        <p>${item.measuredTime}</p>
+        <p>item.problems</p>
     </div>
 </#list>
 <hr>
 <div>
     <h3>Add a new time entry!</h3>
     <form action="/submit" method="post">
-        <input type="text" name="headline">
+        <label for="timeOfEntry">Time of entry</label>
+        <input type="text" name="timeOfEntry">
         <br>
-        <textarea name="body"></textarea>
+        <label for="measuredTime">Measured time</label>
+        <input type="text" name="measuredTime">
+        <br>
+        <label for="problems">Problems if any</label>
+        <textarea name="problems"></textarea>
         <br>
         <input type="submit">
     </form>
