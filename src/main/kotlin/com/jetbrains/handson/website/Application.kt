@@ -49,6 +49,9 @@ fun Application.module() {
             if (params["timeOfEntry"]?.isNotBlank()!!)
                 timeOfEntry = LocalDateTime.parse(params["timeOfEntry"], DateTimeFormatter.ISO_LOCAL_DATE_TIME)
             val newEntry = TimeEntry(UUID.randomUUID().toString(), listOf(problems), timeOfEntry, LocalTime.parse(measuredTime, giveShortTimeFormatter()))
+            runBlocking {
+                svcClient.postTimeEntry(newEntry)
+            }
             timeEntries.add(0, newEntry)
             call.respondHtml {
                 body {
@@ -62,7 +65,7 @@ fun Application.module() {
                         }
                     }
                     p {
-                        +"You have submitted a total of ${timeEntries.count()} entries."
+                        +"You have submitted a total of XXX entries."
                     }
                     a("/") {
                         +"Go back"

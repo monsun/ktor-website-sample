@@ -22,7 +22,7 @@
     <h3>Add a new time entry!</h3>
     <form action="/submit" method="post">
         <label for="timeOfEntry">Time of entry</label>
-        <input type="text" name="timeOfEntry">
+        <input type="datetime-local" name="timeOfEntry">
         <br>
         <label for="measuredTime">Measured time</label>
         <input type="text" name="measuredTime">
